@@ -3,13 +3,13 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
-@app.get("/spinnaker-poc/healthz")
+@app.get("/argocd-poc/healthz")
 def health_check():
     """Health check endpoint"""
     return {"status": "ok"}
 
 
-@app.get("/spinnaker-poc/main")
+@app.get("/argocd-poc/main")
 def main():
     """Main endpoint"""
     return {"sample-service": "Service is live and working fine"}
