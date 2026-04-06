@@ -20,6 +20,7 @@ def main():
 def get_config():
     """Display ConfigMap parameters injected as environment variables"""
     return {
+        "SERVICE_NAME": os.getenv("SERVICE_NAME", "not set"),
         "API_BASE_URL": os.getenv("API_BASE_URL", "not set"),
         "CONFIGMAP_PARAM_1": os.getenv("CONFIGMAP_PARAM_1", "not set"),
         "CONFIGMAP_PARAM_2": os.getenv("CONFIGMAP_PARAM_2", "not set"),
