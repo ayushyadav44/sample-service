@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -13,6 +15,15 @@ def health_check():
 def main():
     """Main endpoint"""
     return {"sample-service": "Service is live and working fine"}
+
+@app.get("/argocd-poc/config")
+def get_config():
+    """Display ConfigMap parameters injected as environment variables"""
+    return {
+        "API_BASE_URL": os.getenv("API_BASE_URL", "not set"),
+        "CONFIGMAP_PARAM_1": os.getenv("CONFIGMAP_PARAM_1", "not set"),
+        "CONFIGMAP_PARAM_2": os.getenv("CONFIGMAP_PARAM_2", "not set"),
+    }
 
 
 if __name__ == "__main__":
