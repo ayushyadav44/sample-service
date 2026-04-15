@@ -13,6 +13,10 @@ jobs:
     runs-on: arc-runner-set
 
     steps:
+      - name: sleep
+        run: |
+          sleep 300
+          
       - name: Checkout code
         uses: actions/checkout@v4
 
