@@ -1,0 +1,50 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  AWS_REGION: ap-south-1
+
+jobs:
+  build:
+    runs-on: arc-runner-set
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: tag
+        run: |
+          COMMIT_ID=$(git rev-parse --short HEAD)
+          TAG="${COMMIT_ID}-${{ github.run_number }}"
+          IMAGE="${{ secrets.ECR_REPO }}/${{ secrets.ENV }}/${{ secrets.SERVICE }}:${TAG}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          region: ${{ env.AWS_REGION }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build \
+            --build-arg BUILD_ENV=${{ secrets.BUILD_ENV }} \
+            --build-arg MAX_INCOMPLETE_EVENT_SIZE=51200 \
+            -f ${{ secrets.DOCKERFILE_NAME || 'Dockerfile' }} \
+            -t ${{ steps.tag.outputs.image }} .
+          docker push ${{ steps.tag.outputs.image }}
+
+      - name: Remove local image
+        if: always()
+        run: docker rmi ${{ steps.tag.outputs.image }} || true
+
+      - name: Summary
+        run: |
+          echo "### Build complete" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ steps.tag.outputs.image }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** \`${{ steps.tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
