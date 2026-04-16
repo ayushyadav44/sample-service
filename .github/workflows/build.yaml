@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-  wokdlow_dispatch:
+  workflow_dispatch:
     inputs:
       env:
         description: "Deployment environment"
