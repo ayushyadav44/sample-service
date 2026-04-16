@@ -63,6 +63,8 @@ jobs:
           file: ${{ github.event.inputs.dockerfile_name || vars.DOCKERFILE_NAME || 'Dockerfile' }}
           push: true
           platforms: linux/amd64
+          provenance: false
+          sbom: false
           tags: ${{ steps.tag.outputs.image }}
           build-args: |
             ENV=${{ github.event.inputs.env || vars.ENV }}
