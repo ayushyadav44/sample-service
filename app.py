@@ -14,7 +14,7 @@ def health_check():
 @app.get("/argocd-poc/main")
 def main():
     """Main endpoint"""
-    return {"sample-service": "Service is live and working fine, alongwith image updater, test-2"}
+    return {"sample-service": "Service is live and working fine, alongwith image updater, test-2, githuv actions is working"}
 
 @app.get("/argocd-poc/config")
 def get_config():
