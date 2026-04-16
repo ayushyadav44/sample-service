@@ -4,19 +4,40 @@ on:
   push:
     branches:
       - master
+  wokdlow_dispatch:
+    inputs:
+      env:
+        description: "Deployment environment"
+        required: true
+        default: "staging"
+        type: string
+      buildEnv:
+        description: "Build environment"
+        required: true
+        default: "staging"
+        type: string
+      service:
+        description: "Service name"
+        required: true
+        default: "sample-service"
+        type: string
+      dfName:
+        description: "Dockerfile to use for build"
+        required: true
+        default: "Dockerfile"
+        type: string
 
 env:
   AWS_REGION: ap-south-1
 
+env:
+  AWS_REGION: ap-south-1
+  AWS_DEFAULT_REGION: ap-south-1
+
 jobs:
   build:
     runs-on: arc-runner-set
-
     steps:
-      - name: sleep
-        run: |
-          sleep 10
-          
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -25,27 +46,29 @@ jobs:
         run: |
           COMMIT_ID=$(git rev-parse --short HEAD)
           TAG="${COMMIT_ID}-${{ github.run_number }}"
-          IMAGE="${{ secrets.ECR_REPO }}/${{ secrets.ENV }}/${{ secrets.SERVICE }}:${TAG}"
+
+          # Use input if manually triggered, fall back to secret
+          ENV="${{ github.event.inputs.environment || variables.ENV }}"
+          SERVICE="${{ github.event.inputs.service || variables.SERVICE }}"
+
+          IMAGE="${{ variables.ECR_REPO }}/${ENV}/${SERVICE}:${TAG}"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "env=${ENV}" >> $GITHUB_OUTPUT
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
-        with:
-          region: ${{ env.AWS_REGION }}
 
       - name: Build and push Docker image
-        run: |
-          docker build \
-            --build-arg BUILD_ENV=${{ secrets.BUILD_ENV }} \
-            --build-arg MAX_INCOMPLETE_EVENT_SIZE=51200 \
-            -f ${{ secrets.DOCKERFILE_NAME || 'Dockerfile' }} \
-            -t ${{ steps.tag.outputs.image }} .
-          docker push ${{ steps.tag.outputs.image }}
-
-      - name: Remove local image
-        if: always()
-        run: docker rmi ${{ steps.tag.outputs.image }} || true
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ github.event.inputs.dockerfile_name || variables.DOCKERFILE_NAME || 'Dockerfile' }}
+          push: true
+          tags: ${{ steps.tag.outputs.image }}
+          build-args: |
+            BUILD_ENV=${{ github.event.inputs.build_env || variables.BUILD_ENV }}
+            MAX_INCOMPLETE_EVENT_SIZE=51200
 
       - name: Summary
         run: |
