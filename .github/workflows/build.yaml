@@ -65,7 +65,7 @@ jobs:
           tags: ${{ steps.tag.outputs.image }}
           build-args: |
             ENV=${{ github.event.inputs.env || vars.ENV }}
-            ecrRepo = ${{ vars.ECR_REPO }}
+            ecrRepo=${{ vars.ECR_REPO }}
             MAX_INCOMPLETE_EVENT_SIZE=51200
 
       - name: Summary
