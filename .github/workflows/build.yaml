@@ -48,10 +48,10 @@ jobs:
           TAG="${COMMIT_ID}-${{ github.run_number }}"
 
           # Use input if manually triggered, fall back to secret
-          ENV="${{ github.event.inputs.environment || variables.ENV }}"
-          SERVICE="${{ github.event.inputs.service || variables.SERVICE }}"
+          ENV="${{ github.event.inputs.environment || vars.ENV }}"
+          SERVICE="${{ github.event.inputs.service || vars.SERVICE }}"
 
-          IMAGE="${{ variables.ECR_REPO }}/${ENV}/${SERVICE}:${TAG}"
+          IMAGE="${{ vars.ECR_REPO }}/${ENV}/${SERVICE}:${TAG}"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "env=${ENV}" >> $GITHUB_OUTPUT
@@ -63,11 +63,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ${{ github.event.inputs.dockerfile_name || variables.DOCKERFILE_NAME || 'Dockerfile' }}
+          file: ${{ github.event.inputs.dockerfile_name || vars.DOCKERFILE_NAME || 'Dockerfile' }}
           push: true
           tags: ${{ steps.tag.outputs.image }}
           build-args: |
-            BUILD_ENV=${{ github.event.inputs.build_env || variables.BUILD_ENV }}
+            BUILD_ENV=${{ github.event.inputs.build_env || vars.BUILD_ENV }}
             MAX_INCOMPLETE_EVENT_SIZE=51200
 
       - name: Summary
